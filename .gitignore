@@ -1,0 +1,12 @@
+# FastF1 cache
+notebooks/cache/
+
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+.venv/
+
+# Data
+data/
