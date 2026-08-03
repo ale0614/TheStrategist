@@ -30,24 +30,9 @@ def pull_data(season):
             import traceback
             traceback.print_exc()
 
-        return pd.concat(race_laps,ignore_index=True)
+    return pd.concat(race_laps,ignore_index=True)
 
 
 '''schedule = fastf1.get_event_schedule(2024)
 print(schedule.columns.tolist())  # see all available columns
-print(schedule.head())  ''' 
-
-if __name__ == "__main__":
-    
-    seasons=[2022]
-
-    all_laps=[]
-
-    for season in seasons:
-        season_laps=pull_data(season)
-        all_laps.append(season_laps)
-
-    raw_laps = pd.concat(all_laps, ignore_index=True)
-    #not be callign each time the laps
-    raw_laps.to_csv(r'C:/Users/alren/Downloads/F1Prediction/data/raw/all_laps_2022.csv', index=False)
-    print(f"Saved {len(raw_laps)} raw rows")
+print(schedule.head())  '''

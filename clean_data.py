@@ -2,10 +2,7 @@ import fastf1
 import pandas as pd
 
 
-session= fastf1.get_session(2025,"Monaco", "R")
 #load into pandas dataframe organization
-session.load()
-df=pd.DataFrame(session.laps)
 '''Print all the information it has
 pd.set_option('display.max_columns', None)
 print(df.head())
@@ -20,15 +17,17 @@ def clean_data(df):
 
     laps= laps.dropna(subset=["LapTimeSeconds"])
 
-    #Use only laps that have a green flag and arent pit stop lap before and after
+    #Use only laps that have a green flag and aren't pit stop lap before and after
     laps=laps[laps["TrackStatus"]=='1']
     laps=laps[laps["PitInTime"].isna() & laps["PitOutTime"].isna()]
+
     #if column missing
     laps=laps.dropna(subset=["LapTime", "TyreLife", "Stint", "Driver", "Compound"])
-    print(len(laps)) 
+    print(len(laps))
+
+    print("Clean laps:", len(laps)) 
 
     return laps
 
-clean_laps=clean_data(df)
 
 
