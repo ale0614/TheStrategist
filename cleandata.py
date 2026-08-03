@@ -2,7 +2,7 @@ import fastf1
 import pandas as pd
 
 
-session= fastf1.get_session(2024,"Monaco", "R")
+session= fastf1.get_session(2025,"Monaco", "R")
 #load into pandas dataframe organization
 session.load()
 df=pd.DataFrame(session.laps)
@@ -29,6 +29,6 @@ def clean_data(df):
 
     return laps
 
-clean_data=clean_data(df)
+clean_laps=clean_data(df)
 
 
