@@ -21,6 +21,7 @@ def clean_data(df):
     laps=laps[laps["TrackStatus"]=='1']
     laps=laps[laps["PitInTime"].isna() & laps["PitOutTime"].isna()]
     laps=laps[laps["LapNumber"]>1]
+    laps=laps[~laps["AffectedByRedFlag"]]
 
     #if column missing
     laps=laps.dropna(subset=["LapTime", "TyreLife", "Stint", "Driver", "Compound"])

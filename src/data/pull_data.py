@@ -1,6 +1,7 @@
 import fastf1
 import pandas as pd
 import os
+from data.race_events import flag_red_flag_laps
 
 cache_path = r'C:/Users/alren/Downloads/F1Prediction/notebooks/cache'
 print(os.path.exists(cache_path))  # should print True
@@ -16,8 +17,9 @@ def pull_data(season):
     for index, race in schedule.iterrows():
         try:
             session = fastf1.get_session(season, race['EventName'], 'R')
-            session.load(laps=True, telemetry=False, weather=False, messages=True)
+            session.load(laps=True, telemetry=False, weather=False, messages=False)
             laps = pd.DataFrame(session.laps)
+            laps=flag_red_flag_laps(laps,session.track_status)
             laps['Season'] = season
             laps['EventName'] = race['EventName']
             laps['RoundNumber'] = race['RoundNumber']

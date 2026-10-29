@@ -5,33 +5,12 @@ import pandas as pd
 # Reuse the real clean_data so we compare against exactly what the model trains on
 sys.path.insert(0, r'C:/Users/alren/Downloads/F1Prediction/src/data')
 from clean_data import clean_data
+from race_events import find_red_flag_ends
+from race_events import flag_red_flag_laps
 
 fastf1.Cache.enable_cache(r'C:/Users/alren/Downloads/F1Prediction/notebooks/cache')
 fastf1.set_log_level('ERROR')
 
-
-# Find the moments a red flag ended
-def find_red_flag_ends(track_status):
-    rows = track_status.reset_index(drop=True)
-    ends = []
-    for i in range(len(rows) - 1):
-        # a red flag ends when status is '5' and the next status is not '5'
-        if rows.loc[i, 'Status'] == '5' and rows.loc[i + 1, 'Status'] != '5':
-            ends.append(rows.loc[i + 1, 'Time'])
-    return ends
-
-
-# Mark each driver's first n laps after every red flag ends
-def flag_red_flag_laps(laps, track_status, n_laps=2):
-    laps = laps.copy()
-    laps['AffectedByRedFlag'] = False
-
-    for end in find_red_flag_ends(track_status):
-        after = laps[laps['LapStartTime'] >= end]
-        first_laps = after.sort_values('LapNumber').groupby('Driver').head(n_laps)
-        laps.loc[first_laps.index, 'AffectedByRedFlag'] = True
-
-    return laps
 
 
 # Compare clean_data alone vs clean_data + rule for one race
