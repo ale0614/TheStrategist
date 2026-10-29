@@ -20,6 +20,7 @@ def clean_data(df):
     #Use only laps that have a green flag and aren't pit stop lap before and after
     laps=laps[laps["TrackStatus"]=='1']
     laps=laps[laps["PitInTime"].isna() & laps["PitOutTime"].isna()]
+    laps=laps[laps["LapNumber"]>1]
 
     #if column missing
     laps=laps.dropna(subset=["LapTime", "TyreLife", "Stint", "Driver", "Compound"])

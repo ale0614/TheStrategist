@@ -16,7 +16,7 @@ def pull_data(season):
     for index, race in schedule.iterrows():
         try:
             session = fastf1.get_session(season, race['EventName'], 'R')
-            session.load(laps=True, telemetry=False, weather=False, messages=False)
+            session.load(laps=True, telemetry=False, weather=False, messages=True)
             laps = pd.DataFrame(session.laps)
             laps['Season'] = season
             laps['EventName'] = race['EventName']
