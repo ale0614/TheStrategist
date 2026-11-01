@@ -1,105 +1,53 @@
-# The Strategist: F1 Race Strategy Predictor
+# F1 Race Strategist — ML-Powered Race Strategy Simulator
 
-A machine learning tool for finding the best Formula 1 race strategy (when to pit and which tyres to fit) while a race is happening.
+## Project Objective
 
-**Status: in progress.** The foundation is built: a data pipeline over every race of 2022–2024 and a model that predicts lap times from tyre and race state. The strategy layer that uses those predictions to compare pit-stop options is next. See [Roadmap](#roadmap).
+The goal of this project is to develop a machine learning-powered Formula 1 race strategy simulator that evaluates different racing scenarios and helps identify optimal race strategies.
 
-## The idea
+By combining historical Formula 1 data, lap-time prediction, and race simulation, the system aims to estimate how strategic decisions affect overall race performance.
 
-Choosing a strategy comes down to one question, asked over and over during a race: *if we pit on lap X for tyre Y, how long will the rest of the race take?*
+The project is designed to eventually allow users to:
 
-To answer it, the tool needs to know how fast a car will lap on a given compound as the tyre ages, the fuel burns off and the race goes on. So the project is built in two layers:
+- **Predict lap times** based on driver, circuit, tyre compound, tyre degradation, and race conditions.
+- **Simulate race strategies**, including different tyre selections, stint lengths, and pit-stop timings.
+- **Compare strategies**, such as one-stop versus two-stop approaches, to estimate total race time.
+- **Evaluate race scenarios**, including Safety Cars, Virtual Safety Cars, weather changes, and race interruptions.
+- **Identify promising strategies** by comparing simulated outcomes and evaluating trade-offs.
 
-1. **Lap time model** (built): predicts the lap time for any combination of driver, circuit, tyre compound, tyre age and lap number.
-2. **Strategy simulator** (next): uses the model to simulate the rest of the race for every possible pit lap and compound, adds the time lost in the pit lane, and recommends the fastest option. It is re-run as the race unfolds.
+## Current Development Stage
 
-## Lap time model results
+The project is currently in **Phase 1: Lap-Time Prediction**.
 
-Trained on 2022–2023 and evaluated on the full 2024 season, so it is tested on races it has never seen.
+A supervised machine learning model has been developed using FastF1 data from the 2022–2024 Formula 1 seasons.
 
-| Metric | Value (2024 test season) |
-| --- | --- |
-| MAE | **2.78 s** (~3% of a typical lap) |
-| RMSE | 3.92 s |
-| Baseline MAE (circuit's average lap time) | 3.40 s |
-| Improvement over baseline | **18%** |
-| Training laps | 38,826 |
-| Test laps | 22,978 |
+The model is trained on 2022–2023 data and evaluated on the 2024 season, achieving a mean absolute error (MAE) of **2.78 seconds**.
 
-Data covers 61,800+ clean laps across 25 circuits and 28 drivers.
+This model will serve as the predictive component of the future race strategy simulator.
 
-![Actual vs predicted lap times, 2024 Bahrain GP](images/bahrain_2024_ver.png)
+## Development Roadmap
 
-The model follows the race's shape (pace improving as tyres are changed and fuel burns off) but predicts laps consistently slower than reality. The cars were faster in 2024 than in the 2022–2023 training seasons, and the model has no way to account for that yet. For strategy this matters less than it looks: comparing two strategies depends on the *difference* between them, and an offset that affects both equally cancels out.
+**Phase 1 — Lap-Time Prediction (Current)**
 
-## How it works
+- Collect and clean historical F1 race data.
+- Identify and filter race-interruption-affected laps.
+- Train and evaluate a lap-time prediction model.
+- Improve prediction accuracy using additional race and car-performance features.
 
-**1. Data collection** — [src/data/pull_data.py](src/data/pull_data.py)
-Pulls lap-by-lap timing for every race in a season through the [FastF1](https://github.com/theOehrly/Fast-F1) API, tagging each lap with season, event, round and circuit.
+**Phase 2 — Race Strategy Simulation**
 
-**2. Red flag detection** — [src/data/race_events.py](src/data/race_events.py)
-Laps right after a red-flag restart are abnormally slow but are still marked as green-flag laps in the data. The pipeline reads the track-status timeline, finds the moment each red flag ends, and flags each driver's first two laps after the restart.
-The rule was validated against 10 red-flagged races in [notebooks/validate_red_flag.py](notebooks/validate_red_flag.py), comparing each removed lap against that driver's median pace. Removing these laps reduced model error.
+- Simulate tyre degradation throughout a stint.
+- Model pit-stop timing and pit-lane time loss.
+- Estimate total race time for different strategies.
+- Compare one-stop, two-stop, and alternative tyre strategies.
 
-**3. Cleaning** — [src/data/clean_data.py](src/data/clean_data.py)
-Keeps only representative racing laps by removing:
-- laps under safety car, virtual safety car or yellow flags
-- pit-in and pit-out laps
-- the opening lap
-- red-flag restart laps
-- laps with missing time, tyre or driver data
+**Phase 3 — Dynamic Race Scenarios**
 
-**4. Lap time model** — [src/models/GradientBoosting.py](src/models/GradientBoosting.py)
-A scikit-learn `GradientBoostingRegressor` predicting lap time in seconds from:
+- Incorporate Safety Car and Virtual Safety Car conditions.
+- Model weather changes and race interruptions.
+- Evaluate how unexpected events influence strategy decisions.
 
-| Feature | Type |
-| --- | --- |
-| Tyre life (laps) | numeric |
-| Lap number | numeric |
-| Stint | numeric |
-| Tyre compound | categorical (one-hot) |
-| Driver | categorical (one-hot) |
-| Circuit | categorical (one-hot) |
+**Phase 4 — Interactive Application**
 
-After training, the script compares the model against a simple baseline, breaks error down by circuit and by compound, and lists the worst predictions, which is how weak spots (such as circuits absent from the training seasons) were found.
-
-## Roadmap
-
-- [x] Data pipeline for 2022–2024 races
-- [x] Red flag detection and lap cleaning
-- [x] Lap time model with season-based evaluation
-- [ ] Improve tyre degradation modelling: fuel load, track temperature, season-to-season car pace
-- [ ] Strategy simulator: simulate the remaining race for each pit lap and compound, including pit-lane time loss, and rank the options
-- [ ] Validate the simulator against strategies teams actually used in 2024 races
-- [ ] Live mode: update recommendations lap by lap, including reacting to safety cars (cheaper pit stops)
-
-## Project structure
-
-```
-src/
-  main.py                 # pulls + cleans 2022–2024 and saves the dataset
-  data/
-    pull_data.py          # FastF1 data download
-    race_events.py        # red flag detection
-    clean_data.py         # lap filtering
-  models/
-    GradientBoosting.py   # lap time model: training and evaluation
-notebooks/
-  validate_red_flag.py    # checks the red flag rule on real races
-  exploration/            # early scripts used to investigate the data
-images/                   # charts generated by the model script
-```
-
-## Running it
-
-Tested on Python 3.13.
-
-```bash
-pip install -r requirements.txt
-
-# 1. Download and clean 2022–2024 race data (slow the first time; FastF1 caches it)
-python src/main.py
-
-# 2. Train and evaluate the lap time model
-python src/models/GradientBoosting.py
-```
+- Develop an interface for selecting drivers, circuits, and race conditions.
+- Visualize predicted lap times, stint performance, and strategy comparisons.
+- Allow users to experiment with different strategies and view simulated outcomes.
