@@ -43,7 +43,8 @@ def flag_red_flag_laps(laps, track_status, n_laps=2):
 
 if __name__ == "__main__":
     #TEST
-    fastf1.Cache.enable_cache(r'C:/Users/alren/Downloads/F1Prediction/notebooks/cache')
+    import os
+    fastf1.Cache.enable_cache(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'notebooks', 'cache'))
     session = fastf1.get_session(2024, "Japan", "R")
     session.load(laps=True, telemetry=False, weather=False, messages=True)
 

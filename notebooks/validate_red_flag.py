@@ -1,14 +1,18 @@
+import os
 import sys
 import fastf1
 import pandas as pd
 
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 # Reuse the real clean_data so we compare against exactly what the model trains on
-sys.path.insert(0, r'C:/Users/alren/Downloads/F1Prediction/src/data')
+sys.path.insert(0, os.path.join(PROJECT_ROOT, 'src', 'data'))
 from clean_data import clean_data
 from race_events import find_red_flag_ends
 from race_events import flag_red_flag_laps
 
-fastf1.Cache.enable_cache(r'C:/Users/alren/Downloads/F1Prediction/notebooks/cache')
+os.makedirs(os.path.join(PROJECT_ROOT, 'notebooks', 'cache'), exist_ok=True)
+fastf1.Cache.enable_cache(os.path.join(PROJECT_ROOT, 'notebooks', 'cache'))
 fastf1.set_log_level('ERROR')
 
 

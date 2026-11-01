@@ -3,8 +3,9 @@ import pandas as pd
 import os
 from data.race_events import flag_red_flag_laps
 
-cache_path = r'C:/Users/alren/Downloads/F1Prediction/notebooks/cache'
-print(os.path.exists(cache_path))  # should print True
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+cache_path = os.path.join(PROJECT_ROOT, 'notebooks', 'cache')
+os.makedirs(cache_path, exist_ok=True)
 fastf1.Cache.enable_cache(cache_path)
 
 

@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 import matplotlib as plt
@@ -6,7 +7,8 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.compose import ColumnTransformer
 
-clean_laps = pd.read_csv(r'C:\Users\alren\Downloads\F1Prediction\data\cleaned\all_laps_2022_2023_2024.csv')
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+clean_laps = pd.read_csv(os.path.join(PROJECT_ROOT, 'data', 'cleaned', 'all_laps_2022_2023_2024.csv'))
 X=clean_laps[['TyreLife', 'LapNumber', 'Stint', 'Compound', 'Driver', 'Location']]
 Y=clean_laps['LapTimeSeconds']
 

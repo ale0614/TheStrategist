@@ -1,6 +1,7 @@
 from data.clean_data import clean_data
-from data.pull_data import pull_data
+from data.pull_data import pull_data, PROJECT_ROOT
 import pandas as pd
+import os
 
 
 def main():
@@ -30,7 +31,9 @@ def main():
     
     final_data = pd.concat(all_clean_laps, ignore_index=True)
     #not be callign each time the laps
-    final_data.to_csv(r'C:/Users/alren/Downloads/F1Prediction/data/cleaned/all_laps_2022_2023_2024.csv', index=False)
+    output_dir = os.path.join(PROJECT_ROOT, 'data', 'cleaned')
+    os.makedirs(output_dir, exist_ok=True)
+    final_data.to_csv(os.path.join(output_dir, 'all_laps_2022_2023_2024.csv'), index=False)
     print("FINAL SUMMARY")
     print("Total raw rows:", total_raw_rows)
     print("Total cleaned rows:", total_clean_rows)
