@@ -1,10 +1,21 @@
-# F1 Lap Time Prediction
+# F1 Race Strategy Predictor
 
-Predicting Formula 1 race lap times from tyre and race-state data, using every race of the 2022–2024 seasons.
+A machine learning tool for finding the best Formula 1 race strategy (when to pit and which tyres to fit) while a race is happening.
 
-The model is trained on 2022–2023 and evaluated on the full 2024 season, so it is tested on races it has never seen.
+**Status: in progress.** The foundation is built: a data pipeline over every race of 2022–2024 and a model that predicts lap times from tyre and race state. The strategy layer that uses those predictions to compare pit-stop options is next. See [Roadmap](#roadmap).
 
-## Results
+## The idea
+
+Choosing a strategy comes down to one question, asked over and over during a race: *if we pit on lap X for tyre Y, how long will the rest of the race take?*
+
+To answer it, the tool needs to know how fast a car will lap on a given compound as the tyre ages, the fuel burns off and the race goes on. So the project is built in two layers:
+
+1. **Lap time model** (built): predicts the lap time for any combination of driver, circuit, tyre compound, tyre age and lap number.
+2. **Strategy simulator** (next): uses the model to simulate the rest of the race for every possible pit lap and compound, adds the time lost in the pit lane, and recommends the fastest option. It is re-run as the race unfolds.
+
+## Lap time model results
+
+Trained on 2022–2023 and evaluated on the full 2024 season, so it is tested on races it has never seen.
 
 | Metric | Value (2024 test season) |
 | --- | --- |
@@ -19,7 +30,7 @@ Data covers 61,800+ clean laps across 25 circuits and 28 drivers.
 
 ![Actual vs predicted lap times, 2024 Bahrain GP](images/bahrain_2024_ver.png)
 
-The model follows the race's shape (pace improving as tyres are changed and fuel burns off) but predicts laps consistently slower than reality. The cars were faster in 2024 than in the 2022–2023 training seasons, and the model has no way to account for that yet; see [Next steps](#next-steps).
+The model follows the race's shape (pace improving as tyres are changed and fuel burns off) but predicts laps consistently slower than reality. The cars were faster in 2024 than in the 2022–2023 training seasons, and the model has no way to account for that yet. For strategy this matters less than it looks: comparing two strategies depends on the *difference* between them, and an offset that affects both equally cancels out.
 
 ## How it works
 
@@ -38,7 +49,7 @@ Keeps only representative racing laps by removing:
 - red-flag restart laps
 - laps with missing time, tyre or driver data
 
-**4. Model** — [src/models/GradientBoosting.py](src/models/GradientBoosting.py)
+**4. Lap time model** — [src/models/GradientBoosting.py](src/models/GradientBoosting.py)
 A scikit-learn `GradientBoostingRegressor` predicting lap time in seconds from:
 
 | Feature | Type |
@@ -52,6 +63,16 @@ A scikit-learn `GradientBoostingRegressor` predicting lap time in seconds from:
 
 After training, the script compares the model against a simple baseline, breaks error down by circuit and by compound, and lists the worst predictions, which is how weak spots (such as circuits absent from the training seasons) were found.
 
+## Roadmap
+
+- [x] Data pipeline for 2022–2024 races
+- [x] Red flag detection and lap cleaning
+- [x] Lap time model with season-based evaluation
+- [ ] Improve tyre degradation modelling: fuel load, track temperature, season-to-season car pace
+- [ ] Strategy simulator: simulate the remaining race for each pit lap and compound, including pit-lane time loss, and rank the options
+- [ ] Validate the simulator against strategies teams actually used in 2024 races
+- [ ] Live mode: update recommendations lap by lap, including reacting to safety cars (cheaper pit stops)
+
 ## Project structure
 
 ```
@@ -62,7 +83,7 @@ src/
     race_events.py        # red flag detection
     clean_data.py         # lap filtering
   models/
-    GradientBoosting.py   # training and evaluation
+    GradientBoosting.py   # lap time model: training and evaluation
 notebooks/
   validate_red_flag.py    # checks the red flag rule on real races
   exploration/            # early scripts used to investigate the data
@@ -79,14 +100,6 @@ pip install -r requirements.txt
 # 1. Download and clean 2022–2024 race data (slow the first time; FastF1 caches it)
 python src/main.py
 
-# 2. Train and evaluate the model
+# 2. Train and evaluate the lap time model
 python src/models/GradientBoosting.py
 ```
-
-## Next steps
-
-- Account for car performance improving from season to season (e.g. use each team's pace in earlier 2024 races)
-- Add weather and track temperature as features
-- Account for fuel load and track evolution over a race
-- Compare against other models (e.g. XGBoost, LightGBM)
-- Predict full race strategy outcomes from lap-level predictions
