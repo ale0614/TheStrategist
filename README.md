@@ -1,4 +1,4 @@
-# F1 Race Strategy Predictor
+# The Strategist: F1 Race Strategy Predictor
 
 A machine learning tool for finding the best Formula 1 race strategy (when to pit and which tyres to fit) while a race is happening.
 
